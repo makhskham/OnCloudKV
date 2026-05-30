@@ -1,0 +1,43 @@
+---
+# Headless service for StatefulSet stable DNS names (node-0.oncloudkv, etc.)
+apiVersion: v1
+kind: Service
+metadata:
+  name: oncloudkv-headless
+  namespace: oncloudkv
+  labels:
+    app: oncloudkv
+spec:
+  clusterIP: None
+  selector:
+    app: oncloudkv
+  ports:
+    - name: gossip
+      port: 7000
+    - name: raft
+      port: 7001
+    - name: grpc
+      port: 7002
+    - name: http
+      port: 7003
+    - name: metrics
+      port: 7004
+---
+# ClusterIP service for gRPC client traffic
+apiVersion: v1
+kind: Service
+metadata:
+  name: oncloudkv
+  namespace: oncloudkv
+  labels:
+    app: oncloudkv
+spec:
+  selector:
+    app: oncloudkv
+  ports:
+    - name: grpc
+      port: 7002
+      targetPort: 7002
+    - name: http
+      port: 7003
+      targetPort: 7003

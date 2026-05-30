@@ -1,0 +1,65 @@
+﻿version: "3.9"
+
+# Three-node OnCloudKV cluster - node1 bootstraps, node2/node3 join as peers.
+# Ports exposed on host:
+#   node1: grpc=7102  http=7103  metrics=7104
+#   node2: grpc=7202  http=7203  metrics=7204
+#   node3: grpc=7302  http=7303  metrics=7304
+
+x-common: &common
+  image: oncloudkv:latest
+  build:
+    context: ../..
+    dockerfile: deploy/docker/Dockerfile
+  restart: unless-stopped
+
+services:
+  node1:
+    <<: *common
+    container_name: oncloudkv-node1
+    volumes:
+      - node1-data:/data
+      - ../../configs/node1.yaml:/config.yaml:ro
+    ports:
+      - "7102:7002"
+      - "7103:7003"
+      - "7104:7004"
+    networks:
+      - oncloudkv
+
+  node2:
+    <<: *common
+    container_name: oncloudkv-node2
+    volumes:
+      - node2-data:/data
+      - ../../configs/node2.yaml:/config.yaml:ro
+    ports:
+      - "7202:7002"
+      - "7203:7003"
+      - "7204:7004"
+    depends_on: [node1]
+    networks:
+      - oncloudkv
+
+  node3:
+    <<: *common
+    container_name: oncloudkv-node3
+    volumes:
+      - node3-data:/data
+      - ../../configs/node3.yaml:/config.yaml:ro
+    ports:
+      - "7302:7002"
+      - "7303:7003"
+      - "7304:7004"
+    depends_on: [node1]
+    networks:
+      - oncloudkv
+
+volumes:
+  node1-data:
+  node2-data:
+  node3-data:
+
+networks:
+  oncloudkv:
+    driver: bridge

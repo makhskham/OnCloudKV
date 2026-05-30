@@ -1,0 +1,10 @@
+bin/
+data/
+*.db
+*.log
+*.sst
+*.snap
+go.sum
+.env
+*.local.yaml
+__debug_bin

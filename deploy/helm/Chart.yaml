@@ -1,0 +1,16 @@
+apiVersion: v2
+name: oncloudkv
+description: Production-grade distributed key-value store with Raft consensus, tunable consistency, and encryption at rest
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - distributed
+  - key-value
+  - raft
+  - consensus
+  - kubernetes
+home: https://github.com/makhskham/oncloudkv
+maintainers:
+  - name: Makhsuma Khamzaliyeva
+    email: mkhamzaliyeva@gmail.com

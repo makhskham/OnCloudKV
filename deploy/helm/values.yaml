@@ -1,0 +1,41 @@
+replicaCount: 3
+
+image:
+  repository: ghcr.io/makhskham/oncloudkv
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  grpcPort: 7002
+  httpPort: 7003
+  metricsPort: 7004
+
+storage:
+  size: 10Gi
+  storageClassName: ""    # leave empty to use cluster default
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+  limits:
+    cpu: "2"
+    memory: "2Gi"
+
+raft:
+  heartbeatTimeout: "500ms"
+  electionTimeout: "1s"
+  snapshotThreshold: 10000
+
+memtableSizeMb: 64
+compactionIntervalSecs: 30
+
+metrics:
+  enabled: true
+  serviceMonitor: false   # set true if Prometheus Operator is installed
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "7004"
+  prometheus.io/path: "/metrics"

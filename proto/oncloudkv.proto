@@ -1,0 +1,93 @@
+﻿syntax = "proto3";
+
+package oncloudkv.v1;
+
+option go_package = "github.com/makhskham/oncloudkv/proto/gen";
+
+// ─── Messages ────────────────────────────────────────────────────────────────
+
+message PutRequest {
+  string key         = 1;
+  bytes  value       = 2;
+  int64  ttl_seconds = 3; // 0 = no TTL
+}
+
+message PutResponse {
+  bool  success      = 1;
+  int64 raft_index   = 2; // log index after commit - use for read-your-writes
+}
+
+message GetRequest {
+  string key           = 1;
+  string consistency   = 2; // "strong" | "eventual" | "read-your-writes" | "monotonic"
+  int64  session_index = 3; // required when consistency = "read-your-writes"
+  int64  min_version   = 4; // required when consistency = "monotonic"
+}
+
+message GetResponse {
+  bool   found   = 1;
+  bytes  value   = 2;
+  int64  version = 3; // raft log index at which this value was written
+}
+
+message DeleteRequest {
+  string key = 1;
+}
+
+message DeleteResponse {
+  bool  success    = 1;
+  int64 raft_index = 2;
+}
+
+message ScanRequest {
+  string prefix      = 1;
+  int32  limit       = 2; // 0 = no limit
+  string consistency = 3;
+}
+
+message ScanResponse {
+  repeated KeyValue items = 1;
+}
+
+message KeyValue {
+  string key     = 1;
+  bytes  value   = 2;
+  int64  version = 3;
+}
+
+message WatchRequest {
+  string prefix = 1;
+}
+
+message WatchEvent {
+  enum EventType {
+    PUT    = 0;
+    DELETE = 1;
+  }
+  EventType type    = 1;
+  string    key     = 2;
+  bytes     value   = 3;
+  int64     version = 4;
+}
+
+message StatusRequest {}
+
+message StatusResponse {
+  string          node_id       = 1;
+  string          leader        = 2;
+  string          state         = 3; // "Leader" | "Follower" | "Candidate"
+  int64           commit_index  = 4;
+  int64           applied_index = 5;
+  repeated string peers         = 6;
+}
+
+// ─── Service ─────────────────────────────────────────────────────────────────
+
+service KVService {
+  rpc Put    (PutRequest)    returns (PutResponse);
+  rpc Get    (GetRequest)    returns (GetResponse);
+  rpc Delete (DeleteRequest) returns (DeleteResponse);
+  rpc Scan   (ScanRequest)   returns (ScanResponse);
+  rpc Watch  (WatchRequest)  returns (stream WatchEvent);
+  rpc Status (StatusRequest) returns (StatusResponse);
+}

@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: oncloudkv
+  namespace: oncloudkv
+  labels:
+    app: oncloudkv
+spec:
+  serviceName: oncloudkv-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: oncloudkv
+  template:
+    metadata:
+      labels:
+        app: oncloudkv
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "7004"
+        prometheus.io/path: "/metrics"
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: oncloudkv
+          image: ghcr.io/makhskham/oncloudkv:latest
+          imagePullPolicy: Always
+          args: ["/config.yaml"]
+          env:
+            - name: OCKV_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OCKV_RAFT_BOOTSTRAP
+              value: "false"
+          ports:
+            - containerPort: 7000
+              name: gossip
+            - containerPort: 7001
+              name: raft
+            - containerPort: 7002
+              name: grpc
+            - containerPort: 7003
+              name: http
+            - containerPort: 7004
+              name: metrics
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config.yaml
+              subPath: config.yaml
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 7003
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 7003
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+      volumes:
+        - name: config
+          configMap:
+            name: oncloudkv-config
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi

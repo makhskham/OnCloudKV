@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oncloudkv-config
+  namespace: oncloudkv
+data:
+  config.yaml: |
+    node:
+      addr: "0.0.0.0:7000"
+    raft:
+      addr: "0.0.0.0:7001"
+      data_dir: "/data/raft"
+      bootstrap: false
+      heartbeat_timeout: "500ms"
+      election_timeout: "1s"
+      snapshot_threshold: 10000
+    storage:
+      data_dir: "/data/kv"
+      memtable_size_mb: 64
+      compaction_interval_secs: 30
+    grpc:
+      addr: "0.0.0.0:7002"
+    http:
+      addr: "0.0.0.0:7003"
+    metrics:
+      addr: "0.0.0.0:7004"
