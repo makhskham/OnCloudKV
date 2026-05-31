@@ -1,5 +1,7 @@
 ﻿# OnCloudKV
 
+![OnCloudKV](assets/logo.png)
+
 A production-grade distributed key-value store built in Go - featuring Raft consensus, a custom LSM-tree storage engine, tunable per-request consistency, and native Kubernetes deployment.
 
 > Uses the same `hashicorp/raft` library that powers **HashiCorp Vault's Integrated Storage backend**.
